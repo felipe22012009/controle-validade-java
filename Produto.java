@@ -6,11 +6,12 @@ import java.util.Locale;
 public class Produto {
     private int id;
     private String nome;
+    private String categoria;
     private int quantidade;
     private double preco;
     private LocalDate dataValidade;
 
-    public Produto(int id, String nome, int quantidade, double preco, LocalDate dataValidade) {
+    public Produto(int id, String nome, String categoria, int quantidade, double preco, LocalDate dataValidade) {
         if (nome == null || nome.trim().isEmpty()) {
             throw new IllegalArgumentException("O nome do produto não pode ser vazio.");
         }
@@ -26,6 +27,7 @@ public class Produto {
 
         this.id = id;
         this.nome = nome.trim();
+        this.categoria = (categoria == null || categoria.trim().isEmpty()) ? "Geral" : categoria.trim();
         this.quantidade = quantidade;
         this.preco = preco;
         this.dataValidade = dataValidade;
@@ -33,9 +35,17 @@ public class Produto {
 
     public int getId() { return id; }
     public String getNome() { return nome; }
+    public String getCategoria() { return categoria; }
     public int getQuantidade() { return quantidade; }
     public double getPreco() { return preco; }
     public LocalDate getDataValidade() { return dataValidade; }
+
+    public void setQuantidade(int quantidade) {
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
+        }
+        this.quantidade = quantidade;
+    }
 
     public long getDiasParaVencer() {
         return ChronoUnit.DAYS.between(LocalDate.now(), dataValidade);
@@ -87,9 +97,10 @@ public class Produto {
 
     public String toJson() {
         return String.format(Locale.US,
-            "{\"id\":%d,\"nome\":\"%s\",\"quantidade\":%d,\"precoOriginal\":%.2f,\"precoFinal\":%.2f,\"desconto\":%d,\"subtotal\":%.2f,\"prejuizo\":%.2f,\"dataValidade\":\"%s\",\"dias\":%d,\"status\":\"%s\"}",
+            "{\"id\":%d,\"nome\":\"%s\",\"categoria\":\"%s\",\"quantidade\":%d,\"precoOriginal\":%.2f,\"precoFinal\":%.2f,\"desconto\":%d,\"subtotal\":%.2f,\"prejuizo\":%.2f,\"dataValidade\":\"%s\",\"dias\":%d,\"status\":\"%s\"}",
             id,
             escaparJson(nome),
+            escaparJson(categoria),
             quantidade,
             preco,
             getPrecoFinal(),

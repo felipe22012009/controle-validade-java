@@ -3,8 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Validade Mercado - Java + HTML</title>
+    <title>Gestão de Validade Pro - Mercado</title>
     <style>
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-table-head: #f8fafc;
+            --bg-hover: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --input-border: #cbd5e1;
+            --input-bg: #ffffff;
+            --vencido-bg: #fef2f2;
+            --vencido-hover: #fee2e2;
+        }
+
+        body.dark {
+            --bg-body: #0b1120;
+            --bg-card: #1e293b;
+            --bg-table-head: #0f172a;
+            --bg-hover: #263349;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --input-border: #475569;
+            --input-bg: #0f172a;
+            --vencido-bg: rgba(239, 68, 68, 0.14);
+            --vencido-hover: rgba(239, 68, 68, 0.24);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,33 +41,34 @@
         }
 
         body {
-            background-color: #f1f5f9;
-            color: #1e293b;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             padding: 20px;
             line-height: 1.5;
+            transition: background-color 0.25s, color 0.25s;
         }
 
         .container {
-            max-width: 1150px;
+            max-width: 1220px;
             margin: 0 auto;
         }
 
         header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
             color: white;
-            padding: 28px 24px;
-            border-radius: 14px;
+            padding: 26px 28px;
+            border-radius: 16px;
             margin-bottom: 24px;
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+            box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.25);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 16px;
         }
 
         header h1 {
-            font-size: 1.6rem;
+            font-size: 1.65rem;
             letter-spacing: -0.5px;
         }
 
@@ -48,21 +77,36 @@
             font-size: 0.9rem;
         }
 
-        .header-info {
+        .header-acoes {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .badge-header {
             background: rgba(255, 255, 255, 0.12);
-            padding: 6px 14px;
+            padding: 7px 14px;
             border-radius: 20px;
             font-size: 0.85rem;
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.28);
         }
 
         .ponto-status {
@@ -80,17 +124,22 @@
 
         .resumo-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
 
         .resumo-card {
-            background: white;
-            padding: 18px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             border-left: 5px solid #3b82f6;
+            transition: transform 0.2s;
+        }
+
+        .resumo-card:hover {
+            transform: translateY(-2px);
         }
 
         .resumo-card.promo { border-left-color: #f59e0b; }
@@ -102,20 +151,20 @@
             font-size: 0.78rem;
             text-transform: uppercase;
             font-weight: 700;
-            color: #64748b;
+            color: var(--text-muted);
         }
 
         .resumo-card h2 {
-            font-size: 1.5rem;
-            margin-top: 4px;
-            color: #0f172a;
+            font-size: 1.55rem;
+            margin-top: 6px;
+            color: var(--text-main);
         }
 
         .card {
-            background: white;
+            background: var(--bg-card);
             padding: 24px;
-            border-radius: 14px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
             margin-bottom: 24px;
         }
 
@@ -123,12 +172,12 @@
             font-size: 1.1rem;
             font-weight: 700;
             margin-bottom: 16px;
-            color: #0f172a;
+            color: var(--text-main);
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 16px;
             margin-bottom: 18px;
         }
@@ -142,18 +191,20 @@
             font-size: 0.85rem;
             font-weight: 600;
             margin-bottom: 6px;
-            color: #475569;
+            color: var(--text-muted);
         }
 
-        input {
+        input, select {
             padding: 11px 14px;
-            border: 1.5px solid #cbd5e1;
+            border: 1.5px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-main);
             border-radius: 8px;
             font-size: 0.95rem;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -177,7 +228,6 @@
 
         .btn-primary:hover {
             background: #1d4ed8;
-            transform: translateY(-1px);
         }
 
         .controles-tabela {
@@ -189,13 +239,22 @@
             margin-bottom: 18px;
         }
 
-        .busca-box {
+        .busca-filtros-lado {
+            display: flex;
+            gap: 10px;
             flex: 1;
-            min-width: 220px;
+            min-width: 280px;
+            flex-wrap: wrap;
         }
 
-        .busca-box input {
-            width: 100%;
+        .busca-filtros-lado input {
+            flex: 2;
+            min-width: 180px;
+        }
+
+        .busca-filtros-lado select {
+            flex: 1;
+            min-width: 140px;
         }
 
         .filtros {
@@ -205,19 +264,17 @@
         }
 
         .btn-filtro {
-            background: #e2e8f0;
-            color: #334155;
+            background: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
             padding: 8px 14px;
             font-size: 0.85rem;
         }
 
-        .btn-filtro:hover {
-            background: #cbd5e1;
-        }
-
         .btn-filtro.ativo {
-            background: #0f172a;
+            background: #2563eb;
             color: white;
+            border-color: #2563eb;
         }
 
         .tabela-wrapper {
@@ -232,27 +289,64 @@
         th, td {
             text-align: left;
             padding: 14px 12px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
         }
 
         th {
-            background: #f8fafc;
-            color: #475569;
-            font-size: 0.8rem;
+            background: var(--bg-table-head);
+            color: var(--text-muted);
+            font-size: 0.78rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         tr.linha-vencida td {
-            background-color: #fef2f2;
+            background-color: var(--vencido-bg);
         }
 
         tr:hover td {
-            background-color: #f8fafc;
+            background-color: var(--bg-hover);
         }
 
         tr.linha-vencida:hover td {
-            background-color: #fee2e2;
+            background-color: var(--vencido-hover);
+        }
+
+        .tag-categoria {
+            font-size: 0.75rem;
+            background: var(--bg-body);
+            color: var(--text-muted);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            margin-top: 3px;
+        }
+
+        .controle-qtd {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-qtd {
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            border-radius: 6px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-qtd:hover {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
         }
 
         .badge {
@@ -288,17 +382,16 @@
 
         .data-destaque {
             font-weight: 700;
-            color: #0f172a;
             display: block;
         }
 
         .prazo-sub {
             font-size: 0.8rem;
-            color: #64748b;
+            color: var(--text-muted);
         }
 
         .texto-perda {
-            color: #dc2626;
+            color: #ef4444;
             font-weight: 600;
             font-size: 0.9rem;
         }
@@ -310,8 +403,8 @@
             background: #0f172a;
             color: white;
             padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.25);
             font-size: 0.9rem;
             opacity: 0;
             transform: translateY(20px);
@@ -335,23 +428,25 @@
 <div class="container">
     <header>
         <div>
-            <h1>Controle de Validade de Prateleira</h1>
-            <p>Monitoramento de vencimentos e retirada de produtos do mercado</p>
+            <h1>Controle de Validade Pro</h1>
+            <p>Gestão de prateleira, descontos automáticos e controle de perdas</p>
         </div>
-        <div class="header-info">
+        <div class="header-acoes">
             <div class="badge-header">
                 <span>Hoje: <strong id="dataHoje"></strong></span>
             </div>
             <div class="badge-header">
                 <div id="pontoStatus" class="ponto-status"></div>
-                <span id="textoStatus">API Java Conectada</span>
+                <span id="textoStatus">Java Online</span>
             </div>
+            <button class="btn-header" onclick="exportarCsv()">Exportar Planilha</button>
+            <button class="btn-header" onclick="alternarTema()">Alternar Tema</button>
         </div>
     </header>
 
     <div class="resumo-grid">
         <div class="resumo-card">
-            <span>Total de Lotes</span>
+            <span>Lotes Cadastrados</span>
             <h2 id="totalItens">0</h2>
         </div>
         <div class="resumo-card promo">
@@ -373,38 +468,62 @@
     </div>
 
     <div class="card">
-        <div class="card-titulo">Cadastrar Produto na Prateleira</div>
+        <div class="card-titulo">Adicionar Novo Lote na Prateleira</div>
         <form id="formProduto">
             <div class="form-grid">
                 <div class="form-group">
                     <label for="nome">Nome do Produto</label>
-                    <input type="text" id="nome" placeholder="Ex: Leite Integral 1L" required>
+                    <input type="text" id="nome" placeholder="Ex: Queijo Mussarela 500g" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoria">Setor / Categoria</label>
+                    <select id="categoria" required>
+                        <option value="Laticínios">Laticínios</option>
+                        <option value="Padaria">Padaria</option>
+                        <option value="Açougue">Açougue</option>
+                        <option value="Hortifrúti">Hortifrúti</option>
+                        <option value="Bebidas">Bebidas</option>
+                        <option value="Mercearia">Mercearia</option>
+                        <option value="Frios">Frios</option>
+                        <option value="Outros">Outros</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="quantidade">Quantidade (un.)</label>
-                    <input type="number" id="quantidade" min="1" placeholder="Ex: 24" required>
+                    <input type="number" id="quantidade" min="1" placeholder="Ex: 15" required>
                 </div>
                 <div class="form-group">
                     <label for="preco">Preço Unitário (R$)</label>
-                    <input type="number" id="preco" step="0.01" min="0.01" placeholder="Ex: 5.49" required>
+                    <input type="number" id="preco" step="0.01" min="0.01" placeholder="Ex: 18.90" required>
                 </div>
                 <div class="form-group">
                     <label for="dataValidade">Data de Vencimento</label>
                     <input type="date" id="dataValidade" required>
                 </div>
             </div>
-            <button type="submit" class="btn-primary">Salvar Produto no Estoque</button>
+            <button type="submit" class="btn-primary">Cadastrar Lote no Sistema</button>
         </form>
     </div>
 
     <div class="card">
         <div class="controles-tabela">
-            <div class="busca-box">
-                <input type="text" id="campoBusca" placeholder="Buscar produto pelo nome..." onkeyup="renderizarTabela()">
+            <div class="busca-filtros-lado">
+                <input type="text" id="campoBusca" placeholder="Buscar produto..." onkeyup="renderizarTabela()">
+                <select id="filtroCategoria" onchange="renderizarTabela()">
+                    <option value="TODAS">Todos os Setores</option>
+                    <option value="Laticínios">Laticínios</option>
+                    <option value="Padaria">Padaria</option>
+                    <option value="Açougue">Açougue</option>
+                    <option value="Hortifrúti">Hortifrúti</option>
+                    <option value="Bebidas">Bebidas</option>
+                    <option value="Mercearia">Mercearia</option>
+                    <option value="Frios">Frios</option>
+                    <option value="Outros">Outros</option>
+                </select>
             </div>
             <div class="filtros">
                 <button class="btn-filtro ativo" onclick="mudarFiltro('TODOS', this)">Todos</button>
-                <button class="btn-filtro" onclick="mudarFiltro('VENCIDO', this)">Retirar (Vencidos)</button>
+                <button class="btn-filtro" onclick="mudarFiltro('VENCIDO', this)">Retirar</button>
                 <button class="btn-filtro" onclick="mudarFiltro('PROMOCAO', this)">Promoção</button>
                 <button class="btn-filtro" onclick="mudarFiltro('NORMAL', this)">Normais</button>
             </div>
@@ -414,13 +533,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Produto</th>
-                        <th>Qtd.</th>
+                        <th>Produto / Setor</th>
+                        <th>Estoque</th>
                         <th>Preço Unit.</th>
                         <th>Subtotal / Perda</th>
-                        <th>Dia do Vencimento</th>
-                        <th>Ação Necessária</th>
-                        <th>Controle</th>
+                        <th>Vencimento</th>
+                        <th>Status na Prateleira</th>
+                        <th>Ação</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaProdutos"></tbody>
@@ -438,6 +557,16 @@
     let filtroAtual = 'TODOS';
 
     document.getElementById('dataHoje').textContent = new Date().toLocaleDateString('pt-BR');
+
+    if (localStorage.getItem('temaMercado') === 'dark') {
+        document.body.classList.add('dark');
+    }
+
+    function alternarTema() {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        localStorage.setItem('temaMercado', isDark ? 'dark' : 'light');
+    }
 
     function formatarMoeda(valor) {
         return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -491,29 +620,31 @@
             produtosCache = await resposta.json();
             
             document.getElementById('pontoStatus').classList.remove('offline');
-            document.getElementById('textoStatus').textContent = 'API Java Conectada';
+            document.getElementById('textoStatus').textContent = 'Java Online';
             
             atualizarDashboard();
             renderizarTabela();
         } catch (erro) {
             document.getElementById('pontoStatus').classList.add('offline');
             document.getElementById('textoStatus').textContent = 'Servidor Offline';
-            tabela.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:20px;">Erro ao conectar com o Servidor Java. Verifique se ele está rodando.</td></tr>';
+            tabela.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:20px;">Erro ao conectar com o Servidor Java. Inicie o arquivo iniciar.bat.</td></tr>';
         }
     }
 
     function renderizarTabela() {
         const termoBusca = document.getElementById('campoBusca').value.toLowerCase();
+        const catFiltro = document.getElementById('filtroCategoria').value;
         tabela.innerHTML = '';
 
         const filtrados = produtosCache.filter(p => {
             const bateStatus = filtroAtual === 'TODOS' || p.status === filtroAtual;
+            const bateCategoria = catFiltro === 'TODAS' || p.categoria === catFiltro;
             const bateNome = p.nome.toLowerCase().includes(termoBusca);
-            return bateStatus && bateNome;
+            return bateStatus && bateCategoria && bateNome;
         });
 
         if (filtrados.length === 0) {
-            tabela.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 24px;">Nenhum produto encontrado com esses filtros.</td></tr>';
+            tabela.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding: 24px;">Nenhum lote encontrado com esses filtros.</td></tr>';
             return;
         }
 
@@ -541,8 +672,17 @@
             }
 
             tr.innerHTML = `
-                <td><strong>${escaparHtml(p.nome)}</strong></td>
-                <td>${p.quantidade} un.</td>
+                <td>
+                    <strong>${escaparHtml(p.nome)}</strong><br>
+                    <span class="tag-categoria">${escaparHtml(p.categoria)}</span>
+                </td>
+                <td>
+                    <div class="controle-qtd">
+                        <button class="btn-qtd" onclick="alterarQtd(${p.id}, -1)" title="Dar baixa em 1 unidade">-</button>
+                        <strong>${p.quantidade}</strong>
+                        <button class="btn-qtd" onclick="alterarQtd(${p.id}, 1)" title="Adicionar 1 unidade">+</button>
+                    </div>
+                </td>
                 <td>${precoHtml}</td>
                 <td>${subtotalHtml}</td>
                 <td>
@@ -560,6 +700,7 @@
         e.preventDefault();
         const dados = new URLSearchParams();
         dados.append('nome', document.getElementById('nome').value);
+        dados.append('categoria', document.getElementById('categoria').value);
         dados.append('quantidade', document.getElementById('quantidade').value);
         dados.append('preco', document.getElementById('preco').value);
         dados.append('dataValidade', document.getElementById('dataValidade').value);
@@ -584,6 +725,15 @@
         }
     });
 
+    async function alterarQtd(id, delta) {
+        try {
+            await fetch(`/api/quantidade?id=${id}&delta=${delta}`);
+            carregarProdutos();
+        } catch (erro) {
+            mostrarToast('Erro ao atualizar estoque.', true);
+        }
+    }
+
     async function excluirProduto(id) {
         try {
             const resposta = await fetch(`/api/excluir?id=${id}`);
@@ -595,8 +745,27 @@
         }
     }
 
+    function exportarCsv() {
+        if (produtosCache.length === 0) {
+            mostrarToast('Não há produtos para exportar.', true);
+            return;
+        }
+        let csv = 'Produto;Setor;Quantidade;Preco Original;Preco Final;Desconto (%);Validade;Dias Restantes;Status\n';
+        produtosCache.forEach(p => {
+            csv += `${p.nome};${p.categoria};${p.quantidade};${p.precoOriginal.toFixed(2)};${p.precoFinal.toFixed(2)};${p.desconto};${p.dataValidade};${p.dias};${p.status}\n`;
+        });
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio_validade_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        mostrarToast('Planilha exportada!');
+    }
+
     carregarProdutos();
 </script>
 
 </body>
-</html> 
+</html>

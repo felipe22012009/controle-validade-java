@@ -12,7 +12,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class ServidorLoja {
-    private static final String ARQUIVO_DADOS = "estoque_validade.csv";
+    private static final String ARQUIVO_DADOS = "estoque_mercado.csv";
     private static final List<Produto> estoque = new ArrayList<>();
     private static int proximoId = 1;
 
@@ -46,17 +46,18 @@ public class ServidorLoja {
                     Map<String, String> dados = parseFormData(corpo);
 
                     String nome = dados.get("nome");
+                    String categoria = dados.get("categoria");
                     int qtd = Integer.parseInt(dados.get("quantidade"));
                     double preco = Double.parseDouble(dados.get("preco").replace(",", "."));
                     LocalDate validade = LocalDate.parse(dados.get("dataValidade"));
 
                     synchronized (estoque) {
-                        Produto novo = new Produto(proximoId++, nome, qtd, preco, validade);
+                        Produto novo = new Produto(proximoId++, nome, categoria, qtd, preco, validade);
                         estoque.add(novo);
                         salvarDadosNoArquivo();
                     }
 
-                    enviarResposta(exchange, 201, "{\"mensagem\":\"Produto cadastrado com sucesso!\"}", "application/json");
+                    enviarResposta(exchange, 201, "{\"mensagem\":\"Lote cadastrado com sucesso!\"}", "application/json");
                 } else {
                     enviarResposta(exchange, 405, "{\"erro\":\"Método não permitido.\"}", "application/json");
                 }
@@ -71,11 +72,39 @@ public class ServidorLoja {
             }
         });
 
+        server.createContext("/api/quantidade", exchange -> {
+            try {
+                Map<String, String> params = parseQuery(exchange.getRequestURI().getQuery());
+                int id = Integer.parseInt(params.get("id"));
+                int delta = Integer.parseInt(params.get("delta"));
+
+                synchronized (estoque) {
+                    Iterator<Produto> it = estoque.iterator();
+                    while (it.hasNext()) {
+                        Produto p = it.next();
+                        if (p.getId() == id) {
+                            int novaQtd = p.getQuantidade() + delta;
+                            if (novaQtd <= 0) {
+                                it.remove();
+                            } else {
+                                p.setQuantidade(novaQtd);
+                            }
+                            salvarDadosNoArquivo();
+                            break;
+                        }
+                    }
+                }
+                enviarResposta(exchange, 200, "{\"mensagem\":\"Quantidade atualizada.\"}", "application/json");
+            } catch (Exception e) {
+                enviarResposta(exchange, 400, "{\"erro\":\"Erro ao atualizar quantidade.\"}", "application/json");
+            }
+        });
+
         server.createContext("/api/excluir", exchange -> {
             try {
-                String query = exchange.getRequestURI().getQuery();
-                if (query != null && query.startsWith("id=")) {
-                    int id = Integer.parseInt(query.split("=")[1]);
+                Map<String, String> params = parseQuery(exchange.getRequestURI().getQuery());
+                if (params.containsKey("id")) {
+                    int id = Integer.parseInt(params.get("id"));
                     synchronized (estoque) {
                         boolean removido = estoque.removeIf(p -> p.getId() == id);
                         if (removido) {
@@ -83,7 +112,7 @@ public class ServidorLoja {
                         }
                     }
                 }
-                enviarResposta(exchange, 200, "{\"mensagem\":\"Produto removido da prateleira.\"}", "application/json");
+                enviarResposta(exchange, 200, "{\"mensagem\":\"Lote removido da prateleira.\"}", "application/json");
             } catch (Exception e) {
                 enviarResposta(exchange, 400, "{\"erro\":\"ID inválido para exclusão.\"}", "application/json");
             }
@@ -92,7 +121,7 @@ public class ServidorLoja {
         server.setExecutor(null);
         server.start();
         System.out.println("====================================================");
-        System.out.println(" Servidor Loja Java iniciado com sucesso!");
+        System.out.println(" Sistema Mercado Pro (Java) rodando!");
         System.out.println(" Acesse no navegador: http://localhost:8080");
         System.out.println("====================================================");
     }
@@ -116,8 +145,9 @@ public class ServidorLoja {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(ARQUIVO_DADOS), StandardCharsets.UTF_8)) {
             for (Produto p : estoque) {
                 String nomeLimpo = p.getNome().replace(";", ",");
-                writer.write(String.format(Locale.US, "%d;%s;%d;%.2f;%s",
-                        p.getId(), nomeLimpo, p.getQuantidade(), p.getPreco(), p.getDataValidade().toString()));
+                String catLimpa = p.getCategoria().replace(";", ",");
+                writer.write(String.format(Locale.US, "%d;%s;%s;%d;%.2f;%s",
+                        p.getId(), nomeLimpo, catLimpa, p.getQuantidade(), p.getPreco(), p.getDataValidade().toString()));
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -135,14 +165,15 @@ public class ServidorLoja {
             while ((linha = reader.readLine()) != null) {
                 if (linha.trim().isEmpty()) continue;
                 String[] partes = linha.split(";");
-                if (partes.length == 5) {
+                if (partes.length == 6) {
                     int id = Integer.parseInt(partes[0]);
                     String nome = partes[1];
-                    int qtd = Integer.parseInt(partes[2]);
-                    double preco = Double.parseDouble(partes[3]);
-                    LocalDate validade = LocalDate.parse(partes[4]);
+                    String categoria = partes[2];
+                    int qtd = Integer.parseInt(partes[3]);
+                    double preco = Double.parseDouble(partes[4]);
+                    LocalDate validade = LocalDate.parse(partes[5]);
 
-                    estoque.add(new Produto(id, nome, qtd, preco, validade));
+                    estoque.add(new Produto(id, nome, categoria, qtd, preco, validade));
                     if (id > maiorId) maiorId = id;
                 }
             }
@@ -159,6 +190,12 @@ public class ServidorLoja {
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(bytes);
         }
+    }
+
+    private static Map<String, String> parseQuery(String query) throws UnsupportedEncodingException {
+        Map<String, String> map = new HashMap<>();
+        if (query == null || query.isEmpty()) return map;
+        return parseFormData(query);
     }
 
     private static Map<String, String> parseFormData(String formData) throws UnsupportedEncodingException {
