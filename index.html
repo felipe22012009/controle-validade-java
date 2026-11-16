@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Validade - Java + HTML</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f4f6f9; color: #333; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { background: #1e293b; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; color: #475569; }
+        input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+        button { padding: 10px 18px; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #2563eb; color: white; width: 100%; }
+        .btn-primary:hover { background: #1d4ed8; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; color: #475569; }
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .VENCIDO { background: #fee2e2; color: #b91c1c; }
+        .PROMOCAO { background: #fef3c7; color: #b45309; }
+        .NORMAL { background: #dcfce7; color: #15803d; }
+        .btn-excluir { background: #ef4444; color: white; padding: 5px 10px; font-size: 0.8rem; }
+        .preco-riscado { text-decoration: line-through; color: #94a3b8; font-size: 0.85rem; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Controle de Validade de Produtos</h1>
+        <p>Front-end em HTML/JS + Back-end em Java</p>
+    </header>
+
+    <div class="card">
+        <form id="formProduto">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nome do Produto</label>
+                    <input type="text" id="nome" placeholder="Ex: Iogurte Natural" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade</label>
+                    <input type="number" id="quantidade" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Preço Unitário (R$)</label>
+                    <input type="number" id="preco" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Dias para Vencer</label>
+                    <input type="number" id="dias" placeholder="0 = vencido" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Salvar no Servidor Java</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Qtd.</th>
+                    <th>Preço</th>
+                    <th>Prazo</th>
+                    <th>Status (Calculado no Java)</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaProdutos"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('formProduto');
+    const tabela = document.getElementById('tabelaProdutos');
+
+    function formatarMoeda(valor) {
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    async function carregarProdutos() {
+        const resposta = await fetch('/api/produtos');
+        const produtos = await resposta.json();
+        tabela.innerHTML = '';
+
+        if (produtos.length === 0) {
+            tabela.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum produto cadastrado no Java.</td></tr>';
+            return;
+        }
+
+        produtos.forEach(p => {
+            let precoHtml = formatarMoeda(p.precoFinal);
+            if (p.status === 'PROMOCAO') {
+                precoHtml = `<span class="preco-riscado">${formatarMoeda(p.precoOriginal)}</span><strong>${formatarMoeda(p.precoFinal)}</strong>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${p.nome}</strong></td>
+                <td>${p.quantidade} un.</td>
+                <td>${precoHtml}</td>
+                <td>${p.dias <= 0 ? 'Vencido' : p.dias + ' dia(s)'}</td>
+                <td><span class="badge ${p.status}">${p.status}</span></td>
+                <td><button class="btn-excluir" onclick="excluirProduto(${p.id})">Excluir</button></td>
+            `;
+            tabela.appendChild(tr);
+        });
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const dados = new URLSearchParams();
+        dados.append('nome', document.getElementById('nome').value);
+        dados.append('quantidade', document.getElementById('quantidade').value);
+        dados.append('preco', document.getElementById('preco').value);
+        dados.append('dias', document.getElementById('dias').value);
+
+        await fetch('/api/produtos', {
+            method: 'POST',
+            body: dados
+        });
+
+        form.reset();
+        carregarProdutos();
+    });
+
+    async function excluirProduto(id) {
+        await fetch(`/api/excluir?id=${id}`);
+        carregarProdutos();
+    }
+
+    carregarProdutos();
+</script>
+
+</body>
+</html>
