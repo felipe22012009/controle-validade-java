@@ -12,7 +12,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class ServidorLoja {
-    private static final String ARQUIVO_DADOS = "estoque.csv";
+    private static final String ARQUIVO_DADOS = "estoque_validade.csv";
     private static final List<Produto> estoque = new ArrayList<>();
     private static int proximoId = 1;
 
@@ -94,7 +94,6 @@ public class ServidorLoja {
         System.out.println("====================================================");
         System.out.println(" Servidor Loja Java iniciado com sucesso!");
         System.out.println(" Acesse no navegador: http://localhost:8080");
-        System.out.println(" Banco de dados local: " + ARQUIVO_DADOS);
         System.out.println("====================================================");
     }
 
@@ -148,7 +147,6 @@ public class ServidorLoja {
                 }
             }
             proximoId = maiorId + 1;
-            System.out.println(estoque.size() + " produto(s) carregado(s) do arquivo.");
         } catch (Exception e) {
             System.err.println("Erro ao carregar arquivo de dados: " + e.getMessage());
         }
