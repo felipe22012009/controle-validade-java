@@ -3,112 +3,472 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Validade - Java + HTML</title>
+    <title>Controle de Validade Pro - Java + HTML</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f4f6f9; color: #333; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        header { background: #1e293b; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .form-group { display: flex; flex-direction: column; }
-        label { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; color: #475569; }
-        input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
-        button { padding: 10px 18px; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-        .btn-primary { background: #2563eb; color: white; width: 100%; }
-        .btn-primary:hover { background: #1d4ed8; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        th { background: #f8fafc; color: #475569; }
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            color: white;
+            padding: 28px 24px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        .status-servidor {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ponto-verde {
+            width: 9px;
+            height: 9px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .resumo-card {
+            background: white;
+            padding: 18px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            border-left: 5px solid #3b82f6;
+        }
+
+        .resumo-card.promo { border-left-color: #f59e0b; }
+        .resumo-card.venc { border-left-color: #ef4444; }
+        .resumo-card.valor { border-left-color: #10b981; }
+
+        .resumo-card span {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .resumo-card h2 {
+            font-size: 1.6rem;
+            margin-top: 4px;
+            color: #0f172a;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
+
+        .card-titulo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+
+        input {
+            padding: 11px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        button {
+            padding: 11px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .controles-tabela {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .busca-box {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .busca-box input {
+            width: 100%;
+        }
+
+        .filtros {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-filtro {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+        }
+
+        .btn-filtro:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-filtro.ativo {
+            background: #0f172a;
+            color: white;
+        }
+
+        .tabela-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 14px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
         .VENCIDO { background: #fee2e2; color: #b91c1c; }
         .PROMOCAO { background: #fef3c7; color: #b45309; }
         .NORMAL { background: #dcfce7; color: #15803d; }
-        .btn-excluir { background: #ef4444; color: white; padding: 5px 10px; font-size: 0.8rem; }
-        .preco-riscado { text-decoration: line-through; color: #94a3b8; font-size: 0.85rem; margin-right: 5px; }
+
+        .btn-excluir {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-excluir:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .preco-riscado {
+            text-decoration: line-through;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-right: 6px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f172a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.mostrar {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>Controle de Validade de Produtos</h1>
-        <p>Front-end em HTML/JS + Back-end em Java</p>
+        <div>
+            <h1>Controle de Validade de Produtos</h1>
+            <p>Painel de Gestão de Estoque Integrado ao Java</p>
+        </div>
+        <div class="status-servidor">
+            <div class="ponto-verde"></div>
+            <span>API Java Conectada</span>
+        </div>
     </header>
 
+    <div class="resumo-grid">
+        <div class="resumo-card">
+            <span>Total de Lotes</span>
+            <h2 id="totalItens">0</h2>
+        </div>
+        <div class="resumo-card promo">
+            <span>Em Promoção (50%)</span>
+            <h2 id="totalPromocao">0</h2>
+        </div>
+        <div class="resumo-card venc">
+            <span>Produtos Vencidos</span>
+            <h2 id="totalVencidos">0</h2>
+        </div>
+        <div class="resumo-card valor">
+            <span>Valor em Estoque</span>
+            <h2 id="valorTotal">R$ 0,00</h2>
+        </div>
+    </div>
+
     <div class="card">
+        <div class="card-titulo">Cadastrar Novo Lote</div>
         <form id="formProduto">
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Nome do Produto</label>
-                    <input type="text" id="nome" placeholder="Ex: Iogurte Natural" required>
+                    <label for="nome">Nome do Produto</label>
+                    <input type="text" id="nome" placeholder="Ex: Iogurte Natural 170g" required>
                 </div>
                 <div class="form-group">
-                    <label>Quantidade</label>
-                    <input type="number" id="quantidade" min="1" required>
+                    <label for="quantidade">Quantidade (un.)</label>
+                    <input type="number" id="quantidade" min="1" placeholder="Ex: 20" required>
                 </div>
                 <div class="form-group">
-                    <label>Preço Unitário (R$)</label>
-                    <input type="number" id="preco" step="0.01" min="0.01" required>
+                    <label for="preco">Preço Unitário (R$)</label>
+                    <input type="number" id="preco" step="0.01" min="0.01" placeholder="Ex: 4.50" required>
                 </div>
                 <div class="form-group">
-                    <label>Dias para Vencer</label>
-                    <input type="number" id="dias" placeholder="0 = vencido" required>
+                    <label for="dias">Dias para Vencer</label>
+                    <input type="number" id="dias" placeholder="0 ou negativo = vencido" required>
                 </div>
             </div>
-            <button type="submit" class="btn-primary">Salvar no Servidor Java</button>
+            <button type="submit" class="btn-primary">Cadastrar Produto no Estoque</button>
         </form>
     </div>
 
     <div class="card">
-        <table>
-            <thead>
-                <tr>
-                    <th>Produto</th>
-                    <th>Qtd.</th>
-                    <th>Preço</th>
-                    <th>Prazo</th>
-                    <th>Status (Calculado no Java)</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody id="tabelaProdutos"></tbody>
-        </table>
+        <div class="controles-tabela">
+            <div class="busca-box">
+                <input type="text" id="campoBusca" placeholder="Buscar produto pelo nome..." onkeyup="renderizarTabela()">
+            </div>
+            <div class="filtros">
+                <button class="btn-filtro ativo" onclick="mudarFiltro('TODOS', this)">Todos</button>
+                <button class="btn-filtro" onclick="mudarFiltro('PROMOCAO', this)">Promoção</button>
+                <button class="btn-filtro" onclick="mudarFiltro('VENCIDO', this)">Vencidos</button>
+                <button class="btn-filtro" onclick="mudarFiltro('NORMAL', this)">Normais</button>
+            </div>
+        </div>
+
+        <div class="tabela-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd.</th>
+                        <th>Preço Unit.</th>
+                        <th>Subtotal</th>
+                        <th>Prazo</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaProdutos"></tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<div id="toast" class="toast">Ação realizada!</div>
 
 <script>
     const form = document.getElementById('formProduto');
     const tabela = document.getElementById('tabelaProdutos');
+    let produtosCache = [];
+    let filtroAtual = 'TODOS';
 
     function formatarMoeda(valor) {
         return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
+    function mostrarToast(mensagem) {
+        const toast = document.getElementById('toast');
+        toast.textContent = mensagem;
+        toast.classList.add('mostrar');
+        setTimeout(() => toast.classList.remove('mostrar'), 2800);
+    }
+
+    function mudarFiltro(status, botao) {
+        filtroAtual = status;
+        document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('ativo'));
+        botao.classList.add('ativo');
+        renderizarTabela();
+    }
+
+    function atualizarDashboard() {
+        let qtdPromocao = 0;
+        let qtdVencidos = 0;
+        let valorEstoque = 0;
+
+        produtosCache.forEach(p => {
+            if (p.status === 'PROMOCAO') qtdPromocao++;
+            if (p.status === 'VENCIDO') qtdVencidos++;
+            if (p.status !== 'VENCIDO') {
+                valorEstoque += p.precoFinal * p.quantidade;
+            }
+        });
+
+        document.getElementById('totalItens').textContent = produtosCache.length;
+        document.getElementById('totalPromocao').textContent = qtdPromocao;
+        document.getElementById('totalVencidos').textContent = qtdVencidos;
+        document.getElementById('valorTotal').textContent = formatarMoeda(valorEstoque);
+    }
+
     async function carregarProdutos() {
-        const resposta = await fetch('/api/produtos');
-        const produtos = await resposta.json();
+        try {
+            const resposta = await fetch('/api/produtos');
+            produtosCache = await resposta.json();
+            atualizarDashboard();
+            renderizarTabela();
+        } catch (erro) {
+            tabela.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Erro ao conectar com o Servidor Java. Verifique se ele está rodando.</td></tr>';
+        }
+    }
+
+    function renderizarTabela() {
+        const termoBusca = document.getElementById('campoBusca').value.toLowerCase();
         tabela.innerHTML = '';
 
-        if (produtos.length === 0) {
-            tabela.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum produto cadastrado no Java.</td></tr>';
+        const filtrados = produtosCache.filter(p => {
+            const bateStatus = filtroAtual === 'TODOS' || p.status === filtroAtual;
+            const bateNome = p.nome.toLowerCase().includes(termoBusca);
+            return bateStatus && bateNome;
+        });
+
+        if (filtrados.length === 0) {
+            tabela.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 24px;">Nenhum produto encontrado com esses filtros.</td></tr>';
             return;
         }
 
-        produtos.forEach(p => {
+        filtrados.forEach(p => {
             let precoHtml = formatarMoeda(p.precoFinal);
             if (p.status === 'PROMOCAO') {
                 precoHtml = `<span class="preco-riscado">${formatarMoeda(p.precoOriginal)}</span><strong>${formatarMoeda(p.precoFinal)}</strong>`;
             }
+
+            const subtotal = p.status === 'VENCIDO' ? 'R$ 0,00 (Perda)' : formatarMoeda(p.precoFinal * p.quantidade);
+            const textoDias = p.dias <= 0 ? 'Vencido' : `${p.dias} dia(s)`;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${p.nome}</strong></td>
                 <td>${p.quantidade} un.</td>
                 <td>${precoHtml}</td>
-                <td>${p.dias <= 0 ? 'Vencido' : p.dias + ' dia(s)'}</td>
+                <td>${subtotal}</td>
+                <td>${textoDias}</td>
                 <td><span class="badge ${p.status}">${p.status}</span></td>
-                <td><button class="btn-excluir" onclick="excluirProduto(${p.id})">Excluir</button></td>
+                <td><button class="btn-excluir" onclick="excluirProduto(${p.id})">Remover</button></td>
             `;
             tabela.appendChild(tr);
         });
@@ -128,11 +488,13 @@
         });
 
         form.reset();
+        mostrarToast('Produto salvo no servidor Java!');
         carregarProdutos();
     });
 
     async function excluirProduto(id) {
         await fetch(`/api/excluir?id=${id}`);
+        mostrarToast('Produto removido do estoque.');
         carregarProdutos();
     }
 
