@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class ServidorLoja {
@@ -46,10 +48,10 @@ public class ServidorLoja {
                     String nome = dados.get("nome");
                     int qtd = Integer.parseInt(dados.get("quantidade"));
                     double preco = Double.parseDouble(dados.get("preco").replace(",", "."));
-                    int dias = Integer.parseInt(dados.get("dias"));
+                    LocalDate validade = LocalDate.parse(dados.get("dataValidade"));
 
                     synchronized (estoque) {
-                        Produto novo = new Produto(proximoId++, nome, qtd, preco, dias);
+                        Produto novo = new Produto(proximoId++, nome, qtd, preco, validade);
                         estoque.add(novo);
                         salvarDadosNoArquivo();
                     }
@@ -58,6 +60,8 @@ public class ServidorLoja {
                 } else {
                     enviarResposta(exchange, 405, "{\"erro\":\"Método não permitido.\"}", "application/json");
                 }
+            } catch (DateTimeParseException e) {
+                enviarResposta(exchange, 400, "{\"erro\":\"Data de validade inválida.\"}", "application/json");
             } catch (NumberFormatException e) {
                 enviarResposta(exchange, 400, "{\"erro\":\"Verifique os números digitados.\"}", "application/json");
             } catch (IllegalArgumentException e) {
@@ -79,7 +83,7 @@ public class ServidorLoja {
                         }
                     }
                 }
-                enviarResposta(exchange, 200, "{\"mensagem\":\"Produto removido do estoque.\"}", "application/json");
+                enviarResposta(exchange, 200, "{\"mensagem\":\"Produto removido da prateleira.\"}", "application/json");
             } catch (Exception e) {
                 enviarResposta(exchange, 400, "{\"erro\":\"ID inválido para exclusão.\"}", "application/json");
             }
@@ -97,7 +101,7 @@ public class ServidorLoja {
     private static String gerarJsonEstoque() {
         synchronized (estoque) {
             List<Produto> ordenados = new ArrayList<>(estoque);
-            ordenados.sort(Comparator.comparingInt(Produto::getDiasParaVencer));
+            ordenados.sort(Comparator.comparing(Produto::getDataValidade));
 
             StringBuilder json = new StringBuilder("[");
             for (int i = 0; i < ordenados.size(); i++) {
@@ -113,8 +117,8 @@ public class ServidorLoja {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(ARQUIVO_DADOS), StandardCharsets.UTF_8)) {
             for (Produto p : estoque) {
                 String nomeLimpo = p.getNome().replace(";", ",");
-                writer.write(String.format(Locale.US, "%d;%s;%d;%.2f;%d",
-                        p.getId(), nomeLimpo, p.getQuantidade(), p.getPreco(), p.getDiasParaVencer()));
+                writer.write(String.format(Locale.US, "%d;%s;%d;%.2f;%s",
+                        p.getId(), nomeLimpo, p.getQuantidade(), p.getPreco(), p.getDataValidade().toString()));
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -137,9 +141,9 @@ public class ServidorLoja {
                     String nome = partes[1];
                     int qtd = Integer.parseInt(partes[2]);
                     double preco = Double.parseDouble(partes[3]);
-                    int dias = Integer.parseInt(partes[4]);
+                    LocalDate validade = LocalDate.parse(partes[4]);
 
-                    estoque.add(new Produto(id, nome, qtd, preco, dias));
+                    estoque.add(new Produto(id, nome, qtd, preco, validade));
                     if (id > maiorId) maiorId = id;
                 }
             }

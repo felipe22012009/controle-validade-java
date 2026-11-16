@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Validade Pro - Java + HTML</title>
+    <title>Controle de Validade Mercado - Java + HTML</title>
     <style>
         * {
             box-sizing: border-box;
@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1150px;
             margin: 0 auto;
         }
 
@@ -48,8 +48,15 @@
             font-size: 0.9rem;
         }
 
-        .status-servidor {
-            background: rgba(255, 255, 255, 0.1);
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge-header {
+            background: rgba(255, 255, 255, 0.12);
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -236,8 +243,16 @@
             letter-spacing: 0.5px;
         }
 
+        tr.linha-vencida td {
+            background-color: #fef2f2;
+        }
+
         tr:hover td {
             background-color: #f8fafc;
+        }
+
+        tr.linha-vencida:hover td {
+            background-color: #fee2e2;
         }
 
         .badge {
@@ -248,7 +263,7 @@
             display: inline-block;
         }
 
-        .VENCIDO { background: #fee2e2; color: #b91c1c; }
+        .VENCIDO { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
         .PROMOCAO { background: #fef3c7; color: #b45309; }
         .NORMAL { background: #dcfce7; color: #15803d; }
 
@@ -269,6 +284,17 @@
             color: #94a3b8;
             font-size: 0.85rem;
             margin-right: 6px;
+        }
+
+        .data-destaque {
+            font-weight: 700;
+            color: #0f172a;
+            display: block;
+        }
+
+        .prazo-sub {
+            font-size: 0.8rem;
+            color: #64748b;
         }
 
         .texto-perda {
@@ -309,12 +335,17 @@
 <div class="container">
     <header>
         <div>
-            <h1>Controle de Validade de Produtos</h1>
-            <p>Painel de Gestão de Estoque Integrado ao Java</p>
+            <h1>Controle de Validade de Prateleira</h1>
+            <p>Monitoramento de vencimentos e retirada de produtos do mercado</p>
         </div>
-        <div class="status-servidor">
-            <div id="pontoStatus" class="ponto-status"></div>
-            <span id="textoStatus">API Java Conectada</span>
+        <div class="header-info">
+            <div class="badge-header">
+                <span>Hoje: <strong id="dataHoje"></strong></span>
+            </div>
+            <div class="badge-header">
+                <div id="pontoStatus" class="ponto-status"></div>
+                <span id="textoStatus">API Java Conectada</span>
+            </div>
         </div>
     </header>
 
@@ -328,7 +359,7 @@
             <h2 id="totalPromocao">0</h2>
         </div>
         <div class="resumo-card venc">
-            <span>Lotes Vencidos</span>
+            <span>Retirar da Prateleira</span>
             <h2 id="totalVencidos">0</h2>
         </div>
         <div class="resumo-card valor">
@@ -342,27 +373,27 @@
     </div>
 
     <div class="card">
-        <div class="card-titulo">Cadastrar Novo Lote</div>
+        <div class="card-titulo">Cadastrar Produto na Prateleira</div>
         <form id="formProduto">
             <div class="form-grid">
                 <div class="form-group">
                     <label for="nome">Nome do Produto</label>
-                    <input type="text" id="nome" placeholder="Ex: Iogurte Natural 170g" required>
+                    <input type="text" id="nome" placeholder="Ex: Leite Integral 1L" required>
                 </div>
                 <div class="form-group">
                     <label for="quantidade">Quantidade (un.)</label>
-                    <input type="number" id="quantidade" min="1" placeholder="Ex: 20" required>
+                    <input type="number" id="quantidade" min="1" placeholder="Ex: 24" required>
                 </div>
                 <div class="form-group">
                     <label for="preco">Preço Unitário (R$)</label>
-                    <input type="number" id="preco" step="0.01" min="0.01" placeholder="Ex: 4.50" required>
+                    <input type="number" id="preco" step="0.01" min="0.01" placeholder="Ex: 5.49" required>
                 </div>
                 <div class="form-group">
-                    <label for="dias">Dias para Vencer</label>
-                    <input type="number" id="dias" placeholder="0 ou negativo = vencido" required>
+                    <label for="dataValidade">Data de Vencimento</label>
+                    <input type="date" id="dataValidade" required>
                 </div>
             </div>
-            <button type="submit" class="btn-primary">Cadastrar Produto no Estoque</button>
+            <button type="submit" class="btn-primary">Salvar Produto no Estoque</button>
         </form>
     </div>
 
@@ -373,8 +404,8 @@
             </div>
             <div class="filtros">
                 <button class="btn-filtro ativo" onclick="mudarFiltro('TODOS', this)">Todos</button>
+                <button class="btn-filtro" onclick="mudarFiltro('VENCIDO', this)">Retirar (Vencidos)</button>
                 <button class="btn-filtro" onclick="mudarFiltro('PROMOCAO', this)">Promoção</button>
-                <button class="btn-filtro" onclick="mudarFiltro('VENCIDO', this)">Vencidos</button>
                 <button class="btn-filtro" onclick="mudarFiltro('NORMAL', this)">Normais</button>
             </div>
         </div>
@@ -387,9 +418,9 @@
                         <th>Qtd.</th>
                         <th>Preço Unit.</th>
                         <th>Subtotal / Perda</th>
-                        <th>Prazo</th>
-                        <th>Status</th>
-                        <th>Ação</th>
+                        <th>Dia do Vencimento</th>
+                        <th>Ação Necessária</th>
+                        <th>Controle</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaProdutos"></tbody>
@@ -405,6 +436,8 @@
     const tabela = document.getElementById('tabelaProdutos');
     let produtosCache = [];
     let filtroAtual = 'TODOS';
+
+    document.getElementById('dataHoje').textContent = new Date().toLocaleDateString('pt-BR');
 
     function formatarMoeda(valor) {
         return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -486,28 +519,38 @@
 
         filtrados.forEach(p => {
             let precoHtml = formatarMoeda(p.precoFinal);
-            let badgeTexto = p.status;
+            let badgeTexto = 'DENTRO DO PRAZO';
+            let textoPrazo = `Faltam ${p.dias} dia(s)`;
 
-            if (p.status === 'PROMOCAO') {
+            if (p.status === 'VENCIDO') {
+                badgeTexto = 'RETIRAR DA PRATELEIRA';
+                textoPrazo = p.dias === 0 ? 'Vence hoje!' : `Venceu há ${Math.abs(p.dias)} dia(s)`;
+            } else if (p.status === 'PROMOCAO') {
                 precoHtml = `<span class="preco-riscado">${formatarMoeda(p.precoOriginal)}</span><strong>${formatarMoeda(p.precoFinal)}</strong>`;
                 badgeTexto = `PROMOÇÃO (${p.desconto}% OFF)`;
+                textoPrazo = p.dias === 1 ? 'Vence amanhã!' : `Vence em ${p.dias} dias`;
             }
 
             const subtotalHtml = p.status === 'VENCIDO'
                 ? `<span class="texto-perda">-${formatarMoeda(p.prejuizo)} (Perda)</span>`
                 : `<strong>${formatarMoeda(p.subtotal)}</strong>`;
 
-            const textoDias = p.dias <= 0 ? 'Vencido' : `${p.dias} dia(s)`;
-
             const tr = document.createElement('tr');
+            if (p.status === 'VENCIDO') {
+                tr.classList.add('linha-vencida');
+            }
+
             tr.innerHTML = `
                 <td><strong>${escaparHtml(p.nome)}</strong></td>
                 <td>${p.quantidade} un.</td>
                 <td>${precoHtml}</td>
                 <td>${subtotalHtml}</td>
-                <td>${textoDias}</td>
+                <td>
+                    <span class="data-destaque">${p.dataValidade}</span>
+                    <span class="prazo-sub">${textoPrazo}</span>
+                </td>
                 <td><span class="badge ${p.status}">${badgeTexto}</span></td>
-                <td><button class="btn-excluir" onclick="excluirProduto(${p.id})">Remover</button></td>
+                <td><button class="btn-excluir" onclick="excluirProduto(${p.id})">${p.status === 'VENCIDO' ? 'Confirmar Retirada' : 'Remover'}</button></td>
             `;
             tabela.appendChild(tr);
         });
@@ -519,7 +562,7 @@
         dados.append('nome', document.getElementById('nome').value);
         dados.append('quantidade', document.getElementById('quantidade').value);
         dados.append('preco', document.getElementById('preco').value);
-        dados.append('dias', document.getElementById('dias').value);
+        dados.append('dataValidade', document.getElementById('dataValidade').value);
 
         try {
             const resposta = await fetch('/api/produtos', {

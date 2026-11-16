@@ -1,3 +1,6 @@
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
 public class Produto {
@@ -5,9 +8,9 @@ public class Produto {
     private String nome;
     private int quantidade;
     private double preco;
-    private int diasParaVencer;
+    private LocalDate dataValidade;
 
-    public Produto(int id, String nome, int quantidade, double preco, int diasParaVencer) {
+    public Produto(int id, String nome, int quantidade, double preco, LocalDate dataValidade) {
         if (nome == null || nome.trim().isEmpty()) {
             throw new IllegalArgumentException("O nome do produto não pode ser vazio.");
         }
@@ -17,30 +20,43 @@ public class Produto {
         if (preco < 0) {
             throw new IllegalArgumentException("O preço não pode ser negativo.");
         }
+        if (dataValidade == null) {
+            throw new IllegalArgumentException("A data de validade é obrigatória.");
+        }
 
         this.id = id;
         this.nome = nome.trim();
         this.quantidade = quantidade;
         this.preco = preco;
-        this.diasParaVencer = diasParaVencer;
+        this.dataValidade = dataValidade;
     }
 
     public int getId() { return id; }
     public String getNome() { return nome; }
     public int getQuantidade() { return quantidade; }
     public double getPreco() { return preco; }
-    public int getDiasParaVencer() { return diasParaVencer; }
+    public LocalDate getDataValidade() { return dataValidade; }
+
+    public long getDiasParaVencer() {
+        return ChronoUnit.DAYS.between(LocalDate.now(), dataValidade);
+    }
+
+    public String getDataFormatada() {
+        return dataValidade.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
 
     public String getStatus() {
-        if (diasParaVencer <= 0) return "VENCIDO";
-        if (diasParaVencer <= 5) return "PROMOCAO";
+        long dias = getDiasParaVencer();
+        if (dias <= 0) return "VENCIDO";
+        if (dias <= 5) return "PROMOCAO";
         return "NORMAL";
     }
 
     public int getPorcentagemDesconto() {
-        if (diasParaVencer <= 0) return 0;
-        if (diasParaVencer <= 2) return 50;
-        if (diasParaVencer <= 5) return 30;
+        long dias = getDiasParaVencer();
+        if (dias <= 0) return 0;
+        if (dias <= 2) return 50;
+        if (dias <= 5) return 30;
         return 0;
     }
 
@@ -53,12 +69,12 @@ public class Produto {
     }
 
     public double getValorTotalLote() {
-        if (diasParaVencer <= 0) return 0.0;
+        if (getDiasParaVencer() <= 0) return 0.0;
         return getPrecoFinal() * quantidade;
     }
 
     public double getPrejuizoEstimado() {
-        if (diasParaVencer <= 0) return preco * quantidade;
+        if (getDiasParaVencer() <= 0) return preco * quantidade;
         return 0.0;
     }
 
@@ -71,7 +87,7 @@ public class Produto {
 
     public String toJson() {
         return String.format(Locale.US,
-            "{\"id\":%d,\"nome\":\"%s\",\"quantidade\":%d,\"precoOriginal\":%.2f,\"precoFinal\":%.2f,\"desconto\":%d,\"subtotal\":%.2f,\"prejuizo\":%.2f,\"dias\":%d,\"status\":\"%s\"}",
+            "{\"id\":%d,\"nome\":\"%s\",\"quantidade\":%d,\"precoOriginal\":%.2f,\"precoFinal\":%.2f,\"desconto\":%d,\"subtotal\":%.2f,\"prejuizo\":%.2f,\"dataValidade\":\"%s\",\"dias\":%d,\"status\":\"%s\"}",
             id,
             escaparJson(nome),
             quantidade,
@@ -80,7 +96,8 @@ public class Produto {
             getPorcentagemDesconto(),
             getValorTotalLote(),
             getPrejuizoEstimado(),
-            diasParaVencer,
+            getDataFormatada(),
+            getDiasParaVencer(),
             getStatus()
         );
     }
