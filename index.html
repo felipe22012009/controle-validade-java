@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 1050px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
@@ -58,12 +58,17 @@
             gap: 8px;
         }
 
-        .ponto-verde {
+        .ponto-status {
             width: 9px;
             height: 9px;
             background-color: #22c55e;
             border-radius: 50%;
             box-shadow: 0 0 8px #22c55e;
+        }
+
+        .ponto-status.offline {
+            background-color: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
         }
 
         .resumo-grid {
@@ -84,16 +89,17 @@
         .resumo-card.promo { border-left-color: #f59e0b; }
         .resumo-card.venc { border-left-color: #ef4444; }
         .resumo-card.valor { border-left-color: #10b981; }
+        .resumo-card.perda { border-left-color: #64748b; }
 
         .resumo-card span {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             text-transform: uppercase;
             font-weight: 700;
             color: #64748b;
         }
 
         .resumo-card h2 {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             margin-top: 4px;
             color: #0f172a;
         }
@@ -111,9 +117,6 @@
             font-weight: 700;
             margin-bottom: 16px;
             color: #0f172a;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .form-grid {
@@ -268,6 +271,12 @@
             margin-right: 6px;
         }
 
+        .texto-perda {
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -282,6 +291,11 @@
             transform: translateY(20px);
             transition: all 0.3s;
             pointer-events: none;
+            z-index: 100;
+        }
+
+        .toast.erro {
+            background: #dc2626;
         }
 
         .toast.mostrar {
@@ -299,8 +313,8 @@
             <p>Painel de Gestão de Estoque Integrado ao Java</p>
         </div>
         <div class="status-servidor">
-            <div class="ponto-verde"></div>
-            <span>API Java Conectada</span>
+            <div id="pontoStatus" class="ponto-status"></div>
+            <span id="textoStatus">API Java Conectada</span>
         </div>
     </header>
 
@@ -310,16 +324,20 @@
             <h2 id="totalItens">0</h2>
         </div>
         <div class="resumo-card promo">
-            <span>Em Promoção (50%)</span>
+            <span>Em Promoção</span>
             <h2 id="totalPromocao">0</h2>
         </div>
         <div class="resumo-card venc">
-            <span>Produtos Vencidos</span>
+            <span>Lotes Vencidos</span>
             <h2 id="totalVencidos">0</h2>
         </div>
         <div class="resumo-card valor">
-            <span>Valor em Estoque</span>
+            <span>Valor Ativo</span>
             <h2 id="valorTotal">R$ 0,00</h2>
+        </div>
+        <div class="resumo-card perda">
+            <span>Prejuízo (Vencidos)</span>
+            <h2 id="prejuizoTotal">R$ 0,00</h2>
         </div>
     </div>
 
@@ -368,7 +386,7 @@
                         <th>Produto</th>
                         <th>Qtd.</th>
                         <th>Preço Unit.</th>
-                        <th>Subtotal</th>
+                        <th>Subtotal / Perda</th>
                         <th>Prazo</th>
                         <th>Status</th>
                         <th>Ação</th>
@@ -392,11 +410,18 @@
         return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    function mostrarToast(mensagem) {
+    function escaparHtml(texto) {
+        const div = document.createElement('div');
+        div.textContent = texto;
+        return div.innerHTML;
+    }
+
+    function mostrarToast(mensagem, isErro = false) {
         const toast = document.getElementById('toast');
         toast.textContent = mensagem;
+        toast.classList.toggle('erro', isErro);
         toast.classList.add('mostrar');
-        setTimeout(() => toast.classList.remove('mostrar'), 2800);
+        setTimeout(() => toast.classList.remove('mostrar'), 3000);
     }
 
     function mudarFiltro(status, botao) {
@@ -410,29 +435,37 @@
         let qtdPromocao = 0;
         let qtdVencidos = 0;
         let valorEstoque = 0;
+        let prejuizoEstoque = 0;
 
         produtosCache.forEach(p => {
             if (p.status === 'PROMOCAO') qtdPromocao++;
             if (p.status === 'VENCIDO') qtdVencidos++;
-            if (p.status !== 'VENCIDO') {
-                valorEstoque += p.precoFinal * p.quantidade;
-            }
+            valorEstoque += p.subtotal;
+            prejuizoEstoque += p.prejuizo;
         });
 
         document.getElementById('totalItens').textContent = produtosCache.length;
         document.getElementById('totalPromocao').textContent = qtdPromocao;
         document.getElementById('totalVencidos').textContent = qtdVencidos;
         document.getElementById('valorTotal').textContent = formatarMoeda(valorEstoque);
+        document.getElementById('prejuizoTotal').textContent = formatarMoeda(prejuizoEstoque);
     }
 
     async function carregarProdutos() {
         try {
             const resposta = await fetch('/api/produtos');
+            if (!resposta.ok) throw new Error('Falha na resposta');
             produtosCache = await resposta.json();
+            
+            document.getElementById('pontoStatus').classList.remove('offline');
+            document.getElementById('textoStatus').textContent = 'API Java Conectada';
+            
             atualizarDashboard();
             renderizarTabela();
         } catch (erro) {
-            tabela.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444;">Erro ao conectar com o Servidor Java. Verifique se ele está rodando.</td></tr>';
+            document.getElementById('pontoStatus').classList.add('offline');
+            document.getElementById('textoStatus').textContent = 'Servidor Offline';
+            tabela.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:20px;">Erro ao conectar com o Servidor Java. Verifique se ele está rodando.</td></tr>';
         }
     }
 
@@ -453,21 +486,27 @@
 
         filtrados.forEach(p => {
             let precoHtml = formatarMoeda(p.precoFinal);
+            let badgeTexto = p.status;
+
             if (p.status === 'PROMOCAO') {
                 precoHtml = `<span class="preco-riscado">${formatarMoeda(p.precoOriginal)}</span><strong>${formatarMoeda(p.precoFinal)}</strong>`;
+                badgeTexto = `PROMOÇÃO (${p.desconto}% OFF)`;
             }
 
-            const subtotal = p.status === 'VENCIDO' ? 'R$ 0,00 (Perda)' : formatarMoeda(p.precoFinal * p.quantidade);
+            const subtotalHtml = p.status === 'VENCIDO'
+                ? `<span class="texto-perda">-${formatarMoeda(p.prejuizo)} (Perda)</span>`
+                : `<strong>${formatarMoeda(p.subtotal)}</strong>`;
+
             const textoDias = p.dias <= 0 ? 'Vencido' : `${p.dias} dia(s)`;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${p.nome}</strong></td>
+                <td><strong>${escaparHtml(p.nome)}</strong></td>
                 <td>${p.quantidade} un.</td>
                 <td>${precoHtml}</td>
-                <td>${subtotal}</td>
+                <td>${subtotalHtml}</td>
                 <td>${textoDias}</td>
-                <td><span class="badge ${p.status}">${p.status}</span></td>
+                <td><span class="badge ${p.status}">${badgeTexto}</span></td>
                 <td><button class="btn-excluir" onclick="excluirProduto(${p.id})">Remover</button></td>
             `;
             tabela.appendChild(tr);
@@ -482,20 +521,35 @@
         dados.append('preco', document.getElementById('preco').value);
         dados.append('dias', document.getElementById('dias').value);
 
-        await fetch('/api/produtos', {
-            method: 'POST',
-            body: dados
-        });
+        try {
+            const resposta = await fetch('/api/produtos', {
+                method: 'POST',
+                body: dados
+            });
+            const resultado = await resposta.json();
 
-        form.reset();
-        mostrarToast('Produto salvo no servidor Java!');
-        carregarProdutos();
+            if (!resposta.ok) {
+                mostrarToast(resultado.erro || 'Erro ao cadastrar.', true);
+                return;
+            }
+
+            form.reset();
+            mostrarToast(resultado.mensagem);
+            carregarProdutos();
+        } catch (erro) {
+            mostrarToast('Sem conexão com o servidor Java.', true);
+        }
     });
 
     async function excluirProduto(id) {
-        await fetch(`/api/excluir?id=${id}`);
-        mostrarToast('Produto removido do estoque.');
-        carregarProdutos();
+        try {
+            const resposta = await fetch(`/api/excluir?id=${id}`);
+            const resultado = await resposta.json();
+            mostrarToast(resultado.mensagem);
+            carregarProdutos();
+        } catch (erro) {
+            mostrarToast('Erro ao remover produto.', true);
+        }
     }
 
     carregarProdutos();
